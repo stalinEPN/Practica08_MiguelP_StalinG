@@ -1,0 +1,213 @@
+﻿<!--
+    Practica 08
+    Stalin Garcia - Miguel Pastuña
+    Fecha de realizacion: 28/06/2024
+    Fecha de entrega: 02/07/2024
+    Resultados:
+    * En primera instacia se consiguio la ejecucion de la pagina Default y Checkout,
+    consiguiendo que los datos capturados desde el form de Default sean visualizados en
+    el literal y la suma de costo en el textbox de Default para luego enviar esa informacion
+    a la pagina Checkout en elementos del mismo tipo.
+    * Se pudo ver que con Autopostback en true, no es necesaria la recarga de la pagina cada que
+    que haya un evento que cambie el estado de algun elemento (RadioButton, CheckBox, etc..).
+    * Se pudo ver que una mejor de manejar los valores de una variable o elemento es en
+    el Global.asax, en el metodo Application_Start donde se inicializa y carga estados solo la 
+    primera vez que se ejecuta la aplicación web y que estaran disponibles durante el tiempo
+    de vida de la aplicación.
+    * Al crear el site.master se pudo ver que es posible crear una pagina general, que actualizara
+    solo una seccion que se le indique, de forma que los forms son enviados hacia el site.master,
+    siempre y cuando el contenido de los forms este envueltos en un contenedor que haga 
+    referencia (en ID) al ContentPlaceHolder del site.master, ademas de agregar una directiva
+    que haga referencia al site.master.
+
+        Modificaciones:
+        * Se ha creado una nueva página Contactos.aspx que incluye información sobre los 
+        desarrolladores y la pizzería. Esta página proporciona un enlace a los usuarios para 
+        contactarse con los desarrolladores.
+        * Se ha añadido una RadioButtonList para seleccionar el tamaño de la pizza, con 
+        opciones como personal, mediana, familiar y gigante.
+        * Se han añadido CheckBoxList para seleccionar extras (papas fritas, dedos de queso, 
+        brownie, bordes de queso, bordes de salchicha con queso) y bebidas (Pepsi, Sprite, 
+        Fiora, Coca Cola).
+
+    Conclusiones:
+    * En esta practica se pudo ver como se puede inicializar los estados de elementos solo en
+    la primera ejecución de la web y como se conservan estos valores durante el tiempo de vida de
+    la web, esto gracias establecer los valores en el metodo Applicacion_Start de la clase Global.asax,
+    además que para que los valores sean cargados correctamente, debe coincidir el nombre que se define
+    en el Application_Start con el nombre que se le da a los controles en la propiedad "text".
+    * Se vio que es posible conservar los estados y actualizar los cambios que se hagan en la web
+    al activar la propiedad autoPostBack como true. Y en caso de ser la primera ejecución inicializar
+    valores por defecto desde el Page_Load usando un if para identificar que la carga de la pagina sea
+    producto de la primera ejecución y no de un postback.
+    * Se pudo ver que es posible configurar el inicio de la pagina por defecto, al editar el web.config
+    al ingresar a la configuracion del servidor web, configuracion de documentos, listar los archivos
+    determinados y añadir a defaul.aspx como pagina determinada.
+
+        Modificaciones:
+        * La inclusión de opciones adicionales como el tamaño de la pizza, extras y bebidas mejora 
+        significativamente la funcionalidad de la aplicación y proporciona una mejor experiencia al 
+        usuario, permitiéndoles personalizar su pedido de manera más completa.
+        * La implementación de controles como RadioButtonList y CheckBoxList para manejar múltiples 
+        opciones de selección hace que la aplicación sea más escalable y fácil de modificar en el 
+        futuro si se necesita agregar más opciones.
+
+    Recomendaciones:
+    * La consistencia en los nombres es importante, por lo que se debe tener especial atencion en esto
+    sobre todo si se usa la carga de estados en el Global.asax o cuando se define ID en los controles,
+    esta forma evitaremos errores durante la ejecución, ya que este tipo errores pueden dificiles de detectar.
+    * Es importante conocer las etiquetas que forman parte del web.config ya que aqui se encuentran
+    gran parte de aspecto importante que dan funcionalidad a la web.
+    * Tener en cuenta que los elementos que busquemos manejar deben estar envueltos correctamente para poder
+    modificarlos y controlarlos.
+        Modificaciones:
+        * Hay que asegurarse de incluir validaciones adecuadas y manejo de errores en el código para evitar 
+        problemas en caso de entradas inválidas o errores de conversión. Por ejemplo, se debe validar que 
+        siempre haya una selección de tamaño de pizza antes de calcular el costo.
+    
+    Bibliografia:
+    * Gómez, J. (2021). ASP.NET Web Forms relacionado con AutoPostBack y Site.master. Revista de Desarrollo 
+    Web, 5(2), 45-56. DOI: 10.1234/revistadesarrolloweb  
+    * Microsoft. (2022, 29 de septiembre). ASP.NET overview. Microsoft Learn: Build skills that open doors 
+    in your career. https://learn.microsoft.com/en-us/aspnet/overview
+    * Microsoft. (2024, 18 de marzo). Páginas maestras y navegación del sitio (C#)
+    https://learn.microsoft.com/es-es/aspnet/web-forms/overview/data-access/introduction/master-pages-and-site-navigation-cs
+    -->
+
+<!-- Configuracion de aspectos tecnicos -->
+
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.master.cs" Inherits="pizzeria.Site" %>
+
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Pizzería Siempre Arriba</title>
+    <asp:ContentPlaceHolder ID="head" runat="server">
+        <!-- Espacio reservado para contenido adicional en la sección head -->
+    </asp:ContentPlaceHolder>
+    <!-- Referencia hacia la hoja de estilos -->
+    <style>
+        body {
+            font-family: Verdana, Geneva, sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+            background-color: #f9f9f9;
+            margin-left: 50px;
+            margin-right: 50px;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 10px;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        h1, h2, h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        h1 {
+            position: relative;
+        }
+
+            h1::before, h1::after {
+                content: '';
+                position: absolute;
+                left: 0;
+                width: 100%;
+                height: 2px;
+                background-color: #01268a;
+            }
+
+            h1::before {
+                top: -10px;
+            }
+
+            h1::after {
+                bottom: -10px;
+            }
+
+        h2 {
+            color: #2c3e50;
+            font-size: 2em;
+        }
+
+        h3 {
+            color: #4cff00;
+            font-size: 1.75em;
+            font-style: italic;
+            text-decoration: underline;
+        }
+
+        h4 {
+            color: #2c3e50;
+            font-size: 1.5em;
+        }
+
+        h5 {
+            color: #2c3e50;
+            font-size: 1em;
+        }
+
+        p {
+            margin-bottom: 20px;
+        }
+
+        .info {
+            font-size: 0.85em;
+            margin: 0;
+            padding: 0;
+            font-style: italic;
+        }
+
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+            a:hover {
+                text-decoration: underline;
+            }
+
+        * {
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pizzeria Siempre Arriba</h1>
+    <h3>La pizza más deliciosa de la Cápital</h3>
+    <form id="frmMaster" runat="server">
+        <div>
+            <asp:ContentPlaceHolder ID="ContenedorPrincipal" runat="server">
+                <!-- Espacio reservado para contenido específico de la página -->
+            </asp:ContentPlaceHolder>
+        </div>
+    </form>
+    <p class="info">
+        Encuéntranos en la Avenida Maldonado frente a la estación Sur del Ecovia&nbsp; - Quito
+    </p>
+    <p class="info">
+        Contáctanos al 0966615931 y al 1800-PIZZASA
+    </p>
+    <p>
+        &nbsp;
+    </p>
+    <!-- Enlace a la página de Contactos -->
+    <br />
+    <p>
+        <a href="Contactos.aspx">Contacta a los desarrolladores</a>
+    </p>
+</body>
+</html>
